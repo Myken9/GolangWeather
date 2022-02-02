@@ -2,6 +2,7 @@ package main
 
 import (
 	"GolangWeather/telegram"
+	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -30,6 +31,13 @@ func main() {
 		if err := telegramBot.Start(); err != nil {
 			log.Fatal(err)
 		}
+		telegramBot.HandleMessage(handleMessage)
 	}
 
+}
+
+func handleMessage(message string) string {
+	fmt.Println("Input message " + message)
+
+	return "output message " + message
 }
