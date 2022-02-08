@@ -8,7 +8,7 @@ import (
 type Bot struct {
 	api *tgbotapi.BotAPI
 
-	handleMessageFunction  func(msg string) string
+	handleMessageFunction  func(msg tgbotapi.Message) string
 	handleCommandFunctions map[string]func() string
 }
 
@@ -20,8 +20,8 @@ func NewBot(apiToken string) *Bot {
 
 	bot := &Bot{
 		api: tg,
-		handleMessageFunction: func(msg string) string {
-			return msg
+		handleMessageFunction: func(msg tgbotapi.Message) string {
+			return msg.Text
 		},
 		handleCommandFunctions: map[string]func() string{},
 	}
@@ -43,13 +43,14 @@ func (b *Bot) StartListening() {
 				continue
 			}
 			msg := update.Message
+
 			//from := msg.From.UserName
-			b.api.Send(tgbotapi.NewMessage(msg.Chat.ID, b.handleMessageFunction(msg.Text)))
+			b.api.Send(tgbotapi.NewMessage(msg.Chat.ID, b.handleMessageFunction(*msg)))
 		}
 	}
 }
 
-func (b *Bot) RegisterMessageHandler(fn func(msg string) string) {
+func (b *Bot) RegisterMessageHandler(fn func(msg tgbotapi.Message) string) {
 	b.handleMessageFunction = fn
 }
 
