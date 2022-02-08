@@ -1,6 +1,5 @@
-
 .idea
 go.sum
-
+vendor/
 .env
 *.db

@@ -6,39 +6,64 @@ import (
 )
 
 type Bot struct {
-	bot *tgbotapi.BotAPI
+	api *tgbotapi.BotAPI
+
+	handleMessageFunction  func(msg string) string
+	handleCommandFunctions map[string]func() string
 }
 
-func NewBot(bot *tgbotapi.BotAPI) *Bot {
-	return &Bot{bot: bot}
+func NewBot(apiToken string) *Bot {
+	tg, e := tgbotapi.NewBotAPI(apiToken)
+	if e != nil {
+		log.Panic(e)
+	}
+
+	bot := &Bot{
+		api: tg,
+		handleMessageFunction: func(msg string) string {
+			return msg
+		},
+		handleCommandFunctions: map[string]func() string{},
+	}
+	bot.api.Debug = true
+
+	log.Printf("Authorized on account %s", bot.api.Self.UserName)
+
+	return bot
 }
 
-func (b *Bot) Start() error {
-	log.Printf("Authorized on account %s", b.bot.Self.UserName)
-
-	return nil
-}
-
-func (b *Bot) HandleMessage(handleMessageFn func(msg string) string) {
-	updates := b.initUpdatesChannel()
+func (b *Bot) StartListening() {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	updates := b.api.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message != nil {
 			if update.Message.IsCommand() {
 				b.handleCommand(update.Message)
 				continue
 			}
-
 			msg := update.Message
 			//from := msg.From.UserName
-			b.bot.Send(tgbotapi.NewMessage(msg.Chat.ID, handleMessageFn(msg.Text)))
+			b.api.Send(tgbotapi.NewMessage(msg.Chat.ID, b.handleMessageFunction(msg.Text)))
 		}
 	}
-
 }
 
-func (b *Bot) initUpdatesChannel() tgbotapi.UpdatesChannel {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+func (b *Bot) RegisterMessageHandler(fn func(msg string) string) {
+	b.handleMessageFunction = fn
+}
 
-	return b.bot.GetUpdatesChan(u)
+func (b *Bot) RegisterCommand(cmd string, fn func() string) {
+	b.handleCommandFunctions[cmd] = fn
+}
+
+func (b *Bot) handleCommand(message *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(message.Chat.ID, "Я не знаю такой команды")
+	if fn, ok := b.handleCommandFunctions[message.Command()]; ok {
+		msg = tgbotapi.NewMessage(message.Chat.ID, fn())
+	}
+
+	if _, e := b.api.Send(msg); e != nil {
+		log.Print("Error while sending message", e)
+	}
 }
