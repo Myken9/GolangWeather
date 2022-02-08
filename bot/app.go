@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-const needWeatherForDays = 5
+const needWeatherFor3HoursInterval = 8
 
 type Application struct {
 	bot     *telegram.Bot
@@ -28,16 +28,24 @@ func (a *Application) Run() {
 			"Отправь /help для помощи."
 	})
 	a.bot.RegisterCommand("help", func() string {
-		return "Напишите название города, в котором хотите узнать погоду."
+		return "Напишите название города, в котором хотите узнать погоду, или отправьте мне свою текущую геопозицию."
 	})
 	a.bot.RegisterMessageHandler(a.handleTelegramMessage)
 
 	a.bot.StartListening()
 }
 
+// todo don't delete this line it's reminder for me: lock in weather library
 func (a *Application) handleTelegramMessage(msg tgbotapi.Message) string {
-	// todo don't delete this line it's reminder for me: lock in weather library
-	e := a.weather.DailyByName(msg.Text, needWeatherForDays)
+	var e error
+	if msg.Location != nil {
+		e = a.weather.DailyByCoordinates(&openweathermap.Coordinates{
+			Longitude: msg.Location.Longitude,
+			Latitude:  msg.Location.Latitude,
+		}, needWeatherFor3HoursInterval)
+	} else {
+		e = a.weather.DailyByName(msg.Text, needWeatherFor3HoursInterval)
+	}
 	if e != nil {
 		log.Print(e)
 	}
