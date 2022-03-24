@@ -23,6 +23,6 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) {
 func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	log.Printf("[%s] %s", message.From.UserName, message.Text)
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, weather.TellWeather(message.Text))
+	msg := tgbotapi.NewMessage(message.Chat.ID, weather.TellWeather(message))
 	b.bot.Send(msg)
 }

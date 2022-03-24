@@ -1,6 +1,7 @@
 package weather
 
 import (
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -15,7 +16,17 @@ func init() {
 	}
 }
 
-func TellWeather(messageText string) (text string) {
+func TellWeather(message *tgbotapi.Message) (text string) {
+	if message.Text != "" {
+		return weatherByCity(message.Text)
+	} else if message.Location.Latitude != 0 {
+		return weatherByGeopos(message.Location.Latitude, message.Location.Longitude)
+	} else {
+		return "Я не понимаю чего ты хочешь!"
+	}
+}
+
+func weatherByCity(messageText string) (text string) {
 	token, _ := os.LookupEnv("WEATHER_API_KEY")
 
 	w, err := owm.NewCurrent("C", "ru", token)
@@ -27,5 +38,23 @@ func TellWeather(messageText string) (text string) {
 		log.Fatalln(err)
 	}
 	text = "Погода в г." + w.Name + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
+	return text
+}
+
+func weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) (text string) {
+	token, _ := os.LookupEnv("WEATHER_API_KEY")
+
+	w, err := owm.NewCurrent("C", "ru", token)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	w.CurrentByCoordinates(
+		&owm.Coordinates{
+			Longitude: messageLocationLongitude,
+			Latitude:  messageLocationLatitude,
+		},
+	)
+	text = "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
 	return text
 }
