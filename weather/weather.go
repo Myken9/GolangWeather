@@ -35,7 +35,7 @@ func weatherByCity(messageText string) (text string) {
 	}
 
 	if err = w.CurrentByName(messageText); err != nil {
-		log.Fatalln(err)
+		return "Я не знаю такого города."
 	}
 	text = "Погода в г." + w.Name + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
 	return text
@@ -49,12 +49,15 @@ func weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) 
 		log.Fatalln(err)
 	}
 
-	w.CurrentByCoordinates(
+	err = w.CurrentByCoordinates(
 		&owm.Coordinates{
 			Longitude: messageLocationLongitude,
 			Latitude:  messageLocationLatitude,
 		},
 	)
+	if err != nil {
+		return "Где это вы находитесь?"
+	}
 	text = "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
 	return text
 }
