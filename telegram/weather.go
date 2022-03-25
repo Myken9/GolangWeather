@@ -1,8 +1,7 @@
-package weather
+package telegram
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
@@ -10,25 +9,20 @@ import (
 	owm "github.com/briandowns/openweathermap"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
-	}
-}
-
 func TellWeather(message *tgbotapi.Message) (text string) {
 	if message.Text != "" {
 		return weatherByCity(message.Text)
 	} else if message.Location.Latitude != 0 {
 		return weatherByGeopos(message.Location.Latitude, message.Location.Longitude)
 	} else {
-		return "Я не понимаю чего ты хочешь!"
+		log.Print("Location is not found")
+		return "Попробуйте чуть позже"
 	}
 }
 
 func weatherByCity(messageText string) (text string) {
-	token, _ := os.LookupEnv("WEATHER_API_KEY")
 
+	token, _ := os.LookupEnv("WEATHER_API_KEY")
 	w, err := owm.NewCurrent("C", "ru", token)
 	if err != nil {
 		log.Fatalln(err)
@@ -42,8 +36,8 @@ func weatherByCity(messageText string) (text string) {
 }
 
 func weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) (text string) {
-	token, _ := os.LookupEnv("WEATHER_API_KEY")
 
+	token, _ := os.LookupEnv("WEATHER_API_KEY")
 	w, err := owm.NewCurrent("C", "ru", token)
 	if err != nil {
 		log.Fatalln(err)
