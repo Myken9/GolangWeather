@@ -8,20 +8,20 @@ import (
 	owm "github.com/briandowns/openweathermap"
 )
 
-func TellWeather(message *tgbotapi.Message) (text string) {
+func (b *Bot) tellWeather(message *tgbotapi.Message) (text string) {
 	if message.Text != "" {
-		return weatherByCity(message.Text)
+		return b.weatherByCity(message.Text)
 	} else if message.Location.Latitude != 0 {
-		return weatherByGeopos(message.Location.Latitude, message.Location.Longitude)
+		return b.weatherByGeopos(message.Location.Latitude, message.Location.Longitude)
 	} else {
 		log.Print("Location is not found")
 		return "Попробуйте чуть позже"
 	}
 }
 
-func weatherByCity(messageText string) (text string) {
+func (b *Bot) weatherByCity(messageText string) (text string) {
 
-	w, err := owm.NewCurrent("C", "ru", tokenWeather)
+	w, err := owm.NewCurrent("C", "ru", b.tokenWeather)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -33,9 +33,9 @@ func weatherByCity(messageText string) (text string) {
 	return text
 }
 
-func weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) (text string) {
+func (b *Bot) weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) (text string) {
 
-	w, err := owm.NewCurrent("C", "ru", tokenWeather)
+	w, err := owm.NewCurrent("C", "ru", b.tokenWeather)
 	if err != nil {
 		log.Fatalln(err)
 	}
