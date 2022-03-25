@@ -11,7 +11,7 @@ import (
 func (b *Bot) tellWeather(message *tgbotapi.Message) (text string) {
 	if message.Text != "" {
 		return b.weatherByCity(message.Text)
-	} else if message.Location.Latitude != 0 {
+	} else if message.Location.Latitude != 0 && message.Location.Longitude != 0 {
 		return b.weatherByGeopos(message.Location.Latitude, message.Location.Longitude)
 	} else {
 		log.Print("Location is not found")
