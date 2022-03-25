@@ -15,19 +15,18 @@ func init() {
 }
 
 func main() {
-	token, exists := os.LookupEnv("TOKEN")
-	if exists {
-		bot, err := tgbotapi.NewBotAPI(token)
-		if err != nil {
-			log.Panic(err)
-		}
+	token := os.Getenv("TOKEN")
+	tokenWeather := os.Getenv("WEATHER_API_KEY")
 
-		bot.Debug = true
-
-		telegramBot := telegram.NewBot(bot)
-		if err := telegramBot.Start(); err != nil {
-			log.Fatal(err)
-		}
+	bot, err := tgbotapi.NewBotAPI(token)
+	if err != nil {
+		log.Panic(err)
 	}
 
+	bot.Debug = true
+
+	telegramBot := telegram.NewBot(bot, tokenWeather)
+	if err := telegramBot.Start(); err != nil {
+		log.Fatal(err)
+	}
 }

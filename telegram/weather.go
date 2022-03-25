@@ -3,7 +3,6 @@ package telegram
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
-	"os"
 	"strconv"
 
 	owm "github.com/briandowns/openweathermap"
@@ -22,8 +21,7 @@ func TellWeather(message *tgbotapi.Message) (text string) {
 
 func weatherByCity(messageText string) (text string) {
 
-	token, _ := os.LookupEnv("WEATHER_API_KEY")
-	w, err := owm.NewCurrent("C", "ru", token)
+	w, err := owm.NewCurrent("C", "ru", tokenWeather)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -37,8 +35,7 @@ func weatherByCity(messageText string) (text string) {
 
 func weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) (text string) {
 
-	token, _ := os.LookupEnv("WEATHER_API_KEY")
-	w, err := owm.NewCurrent("C", "ru", token)
+	w, err := owm.NewCurrent("C", "ru", tokenWeather)
 	if err != nil {
 		log.Fatalln(err)
 	}
