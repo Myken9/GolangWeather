@@ -6,11 +6,12 @@ import (
 )
 
 type Bot struct {
-	bot *tgbotapi.BotAPI
+	bot          *tgbotapi.BotAPI
+	tokenWeather string
 }
 
-func NewBot(bot *tgbotapi.BotAPI) *Bot {
-	return &Bot{bot: bot}
+func NewBot(bot *tgbotapi.BotAPI, tokenWeather string) *Bot {
+	return &Bot{bot: bot, tokenWeather: tokenWeather}
 }
 
 func (b *Bot) Start() error {

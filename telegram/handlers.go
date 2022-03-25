@@ -13,15 +13,24 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) {
 	switch message.Command() {
 	case commandStart:
 		msg.Text = "Я Sebastian - бот погоды, приятно познакомитсья! Напишите название города, в котором хотите узнать погоду."
-		b.bot.Send(msg)
+		_, err := b.bot.Send(msg)
+		if err != nil {
+			return
+		}
 	default:
-		b.bot.Send(msg)
+		_, err := b.bot.Send(msg)
+		if err != nil {
+			return
+		}
 	}
 }
 
 func (b *Bot) handleMessage(message *tgbotapi.Message) {
 	log.Printf("[%s] %s", message.From.UserName, message.Text)
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, message.Text)
-	b.bot.Send(msg)
+	msg := tgbotapi.NewMessage(message.Chat.ID, b.tellWeather(message))
+	_, err := b.bot.Send(msg)
+	if err != nil {
+		return
+	}
 }
