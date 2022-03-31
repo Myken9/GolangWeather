@@ -6,25 +6,24 @@ import (
 )
 
 type Bot struct {
-	bot          *tgbotapi.BotAPI
-	tokenWeather string
+	bot *tgbotapi.BotAPI
 }
 
-func NewBot(bot *tgbotapi.BotAPI, tokenWeather string) *Bot {
-	return &Bot{bot: bot, tokenWeather: tokenWeather}
+func NewBot(bot *tgbotapi.BotAPI) *Bot {
+	return &Bot{bot: bot}
 }
 
-func (b *Bot) Start() error {
+func (b *Bot) Start(weather *Weather) error {
 	log.Printf("Authorized on account %s", b.bot.Self.UserName)
 
 	updates := b.initUpdatesChannel()
 
-	b.handleUpdates(updates)
+	b.handleUpdates(updates, weather)
 
 	return nil
 }
 
-func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
+func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel, weather *Weather) {
 	for update := range updates {
 		if update.Message != nil {
 			if update.Message.IsCommand() {
@@ -32,7 +31,7 @@ func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
 				continue
 			}
 
-			b.handleMessage(update.Message)
+			b.handleMessage(update.Message, weather)
 		}
 	}
 }

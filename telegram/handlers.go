@@ -25,10 +25,10 @@ func (b *Bot) handleCommand(message *tgbotapi.Message) {
 	}
 }
 
-func (b *Bot) handleMessage(message *tgbotapi.Message) {
+func (b *Bot) handleMessage(message *tgbotapi.Message, weather *Weather) {
 	log.Printf("[%s] %s", message.From.UserName, message.Text)
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, b.tellWeather(message))
+	msg := tgbotapi.NewMessage(message.Chat.ID, b.tellWeather(message, weather))
 	_, err := b.bot.Send(msg)
 	if err != nil {
 		return

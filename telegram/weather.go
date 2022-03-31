@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"github.com/briandowns/openweathermap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"strconv"
@@ -8,39 +9,37 @@ import (
 	owm "github.com/briandowns/openweathermap"
 )
 
-func (b *Bot) tellWeather(message *tgbotapi.Message) (text string) {
+type Weather struct {
+	w *openweathermap.CurrentWeatherData
+}
+
+func NewWeather(w *openweathermap.CurrentWeatherData) *Weather {
+	return &Weather{w: w}
+}
+
+func (w *Bot) tellWeather(message *tgbotapi.Message, weather *Weather) (text string) {
 	if message.Text != "" {
-		return b.weatherByCity(message.Text)
+		return weatherByCity(message.Text, weather)
 	} else if message.Location.Latitude != 0 && message.Location.Longitude != 0 {
-		return b.weatherByGeopos(message.Location.Latitude, message.Location.Longitude)
+		return weatherByGeopos(message.Location.Latitude, message.Location.Longitude, weather.w)
 	} else {
 		log.Print("Location is not found")
 		return "Попробуйте чуть позже"
 	}
 }
 
-func (b *Bot) weatherByCity(messageText string) (text string) {
+func weatherByCity(messageText string, weather *Weather) (text string) {
 
-	w, err := owm.NewCurrent("C", "ru", b.tokenWeather)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err = w.CurrentByName(messageText); err != nil {
+	if err := weather.w.CurrentByName(messageText); err != nil {
 		return "Я не знаю такого города."
 	}
-	text = "Погода в г." + w.Name + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
+	text = "Погода в г." + weather.w.Name + ": " + strconv.Itoa(int(weather.w.Main.Temp)) + "C"
 	return text
 }
 
-func (b *Bot) weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64) (text string) {
+func weatherByGeopos(messageLocationLatitude, messageLocationLongitude float64, w *openweathermap.CurrentWeatherData) (text string) {
 
-	w, err := owm.NewCurrent("C", "ru", b.tokenWeather)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	err = w.CurrentByCoordinates(
+	err := w.CurrentByCoordinates(
 		&owm.Coordinates{
 			Longitude: messageLocationLongitude,
 			Latitude:  messageLocationLatitude,
