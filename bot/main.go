@@ -26,12 +26,12 @@ func main() {
 
 	bot.Debug = true
 
-	botweather, err := owm.NewCurrent("C", "ru", tokenWeather)
+	botWeather, err := owm.NewCurrent("C", "ru", tokenWeather)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	weather := telegram.NewWeather(botweather)
+	weather := telegram.NewWeather(botWeather)
 
 	telegramBot := telegram.NewBot(bot)
 	if err := telegramBot.Start(weather); err != nil {

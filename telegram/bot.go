@@ -13,32 +13,32 @@ func NewBot(bot *tgbotapi.BotAPI) *Bot {
 	return &Bot{bot: bot}
 }
 
-func (b *Bot) Start(weather *Weather) error {
-	log.Printf("Authorized on account %s", b.bot.Self.UserName)
+func (w *Bot) Start(weather *Weather) error {
+	log.Printf("Authorized on account %s", w.bot.Self.UserName)
 
-	updates := b.initUpdatesChannel()
+	updates := w.initUpdatesChannel()
 
-	b.handleUpdates(updates, weather)
+	w.handleUpdates(updates, weather)
 
 	return nil
 }
 
-func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel, weather *Weather) {
+func (w *Bot) handleUpdates(updates tgbotapi.UpdatesChannel, weather *Weather) {
 	for update := range updates {
 		if update.Message != nil {
 			if update.Message.IsCommand() {
-				b.handleCommand(update.Message)
+				w.handleCommand(update.Message)
 				continue
 			}
 
-			b.handleMessage(update.Message, weather)
+			w.handleMessage(update.Message, weather)
 		}
 	}
 }
 
-func (b *Bot) initUpdatesChannel() tgbotapi.UpdatesChannel {
+func (w *Bot) initUpdatesChannel() tgbotapi.UpdatesChannel {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	return b.bot.GetUpdatesChan(u)
+	return w.bot.GetUpdatesChan(u)
 }

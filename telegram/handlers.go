@@ -7,29 +7,29 @@ import (
 
 const commandStart = "start"
 
-func (b *Bot) handleCommand(message *tgbotapi.Message) {
+func (w *Bot) handleCommand(message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "Я не знаю такой команды")
 
 	switch message.Command() {
 	case commandStart:
 		msg.Text = "Я Sebastian - бот погоды, приятно познакомитсья! Напишите название города, в котором хотите узнать погоду."
-		_, err := b.bot.Send(msg)
+		_, err := w.bot.Send(msg)
 		if err != nil {
 			return
 		}
 	default:
-		_, err := b.bot.Send(msg)
+		_, err := w.bot.Send(msg)
 		if err != nil {
 			return
 		}
 	}
 }
 
-func (b *Bot) handleMessage(message *tgbotapi.Message, weather *Weather) {
+func (w *Bot) handleMessage(message *tgbotapi.Message, weather *Weather) {
 	log.Printf("[%s] %s", message.From.UserName, message.Text)
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, b.tellWeather(message, weather))
-	_, err := b.bot.Send(msg)
+	msg := tgbotapi.NewMessage(message.Chat.ID, w.tellWeather(message, weather))
+	_, err := w.bot.Send(msg)
 	if err != nil {
 		return
 	}
