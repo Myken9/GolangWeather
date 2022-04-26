@@ -8,22 +8,22 @@ import (
 )
 
 type Weather struct {
-	W *openweathermap.CurrentWeatherData
+	*openweathermap.CurrentWeatherData
 }
 
 func NewWeather(W *openweathermap.CurrentWeatherData) *Weather {
-	return &Weather{W: W}
+	return &Weather{W}
 }
 
 func (w *Weather) HandleTelegramMessage(msg tgbotapi.Message) string {
 	var e error
 	if msg.Location != nil {
-		e = w.W.CurrentByCoordinates(&openweathermap.Coordinates{
+		e = w.CurrentByCoordinates(&openweathermap.Coordinates{
 			Longitude: msg.Location.Longitude,
 			Latitude:  msg.Location.Latitude,
 		})
 	} else {
-		if e = w.W.CurrentByName(msg.Text); e != nil {
+		if e = w.CurrentByName(msg.Text); e != nil {
 			return "Я не знаю такого города."
 		}
 	}
@@ -33,10 +33,10 @@ func (w *Weather) HandleTelegramMessage(msg tgbotapi.Message) string {
 
 	switch {
 	case msg.Text == "":
-		return "Температура в вашем месте расположения : " + strconv.Itoa(int(w.W.Main.Temp)) + "C"
+		return "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
 
 	default:
-		return "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.W.Main.Temp)) + "C"
+		return "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
 
 	}
 
