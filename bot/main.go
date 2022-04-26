@@ -1,9 +1,10 @@
 package main
 
 import (
+	"GolangWeather/app"
 	"GolangWeather/telegram"
+	"GolangWeather/weather"
 	owm "github.com/briandowns/openweathermap"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -16,25 +17,15 @@ func init() {
 }
 
 func main() {
-	token := os.Getenv("TOKEN")
-	tokenWeather := os.Getenv("WEATHER_API_KEY")
-
-	bot, err := tgbotapi.NewBotAPI(token)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	bot.Debug = true
-
-	botWeather, err := owm.NewCurrent("C", "ru", tokenWeather)
+	botWeather, err := owm.NewCurrent("C", "ru", os.Getenv("WEATHER_API_KEY"))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	weather := telegram.NewWeather(botWeather)
+	weather := weather.NewWeather(botWeather)
 
-	telegramBot := telegram.NewBot(bot)
-	if err := telegramBot.Start(weather); err != nil {
-		log.Fatal(err)
-	}
+	telegramBot := telegram.NewBot(os.Getenv("TOKEN"))
+
+	application := app.NewApplication(telegramBot, weather)
+	application.Run()
 }
