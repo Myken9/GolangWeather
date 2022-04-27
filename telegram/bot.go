@@ -10,8 +10,8 @@ const answer = "Я не знаю такой команды, введите /help
 type Bot struct {
 	Bot *tgbotapi.BotAPI
 
-	HandleMessageFunction  func(msg tgbotapi.Message) string
-	HandleCommandFunctions map[string]func() string
+	handleMessageFunction  func(msg tgbotapi.Message) string
+	handleCommandFunctions map[string]func() string
 }
 
 func NewBot(apiToken string) *Bot {
@@ -22,10 +22,10 @@ func NewBot(apiToken string) *Bot {
 
 	bot := &Bot{
 		Bot: tg,
-		HandleMessageFunction: func(msg tgbotapi.Message) string {
+		handleMessageFunction: func(msg tgbotapi.Message) string {
 			return msg.Text
 		},
-		HandleCommandFunctions: map[string]func() string{},
+		handleCommandFunctions: map[string]func() string{},
 	}
 	bot.Bot.Debug = true
 
@@ -45,22 +45,25 @@ func (b *Bot) StartListening() {
 				continue
 			}
 			msg := update.Message
-			b.Bot.Send(tgbotapi.NewMessage(msg.Chat.ID, b.HandleMessageFunction(*msg)))
+			_, err := b.Bot.Send(tgbotapi.NewMessage(msg.Chat.ID, b.handleMessageFunction(*msg)))
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
 
 func (b *Bot) RegisterMessageHandler(fn func(msg tgbotapi.Message) string) {
-	b.HandleMessageFunction = fn
+	b.handleMessageFunction = fn
 }
 
 func (b *Bot) RegisterCommand(cmd string, fn func() string) {
-	b.HandleCommandFunctions[cmd] = fn
+	b.handleCommandFunctions[cmd] = fn
 }
 
 func (b *Bot) handleCommand(message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, answer)
-	if fn, ok := b.HandleCommandFunctions[message.Command()]; ok {
+	if fn, ok := b.handleCommandFunctions[message.Command()]; ok {
 		msg = tgbotapi.NewMessage(message.Chat.ID, fn())
 	}
 
