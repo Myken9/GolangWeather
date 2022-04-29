@@ -1,21 +1,23 @@
 package app
 
 import (
+	"GolangWeather/storage"
 	"github.com/briandowns/openweathermap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"strconv"
 )
 
-type Weather struct {
+type weather struct {
 	*openweathermap.CurrentWeatherData
+	*storage.Storage
 }
 
-func NewWeather(W *openweathermap.CurrentWeatherData) *Weather {
-	return &Weather{W}
+func NewWeather(W *openweathermap.CurrentWeatherData, S *storage.Storage) *weather {
+	return &weather{W, S}
 }
 
-func (w *Weather) handleTelegramMessage(msg tgbotapi.Message) string {
+func (w *weather) handleTelegramMessage(msg tgbotapi.Message) string {
 	var e error
 	if msg.Location != nil {
 		e = w.CurrentByCoordinates(&openweathermap.Coordinates{
@@ -36,7 +38,11 @@ func (w *Weather) handleTelegramMessage(msg tgbotapi.Message) string {
 		return "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
 
 	default:
-		return "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
+		answer := "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
+		w.SaveUser(msg)
+		//TODO fix function execution
+		//w.SaveMessage(msg, answer)
+		return answer
 
 	}
 
