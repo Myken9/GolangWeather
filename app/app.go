@@ -1,16 +1,15 @@
 package app
 
 import (
-	"GolangWeather/telegram"
-	"GolangWeather/weather"
+	"GolangWeather/pkg/telegram"
 )
 
 type Application struct {
 	*telegram.Bot
-	*weather.Weather
+	*Weather
 }
 
-func NewApplication(bot *telegram.Bot, weather *weather.Weather) *Application {
+func NewApplication(bot *telegram.Bot, weather *Weather) *Application {
 	return &Application{
 		bot,
 		weather,
@@ -25,7 +24,7 @@ func (a *Application) Run() {
 	a.RegisterCommand("help", func() string {
 		return "Напишите название города, в котором хотите узнать погоду, или отправьте мне свою текущую геопозицию."
 	})
-	a.RegisterMessageHandler(a.HandleTelegramMessage)
+	a.RegisterMessageHandler(a.handleTelegramMessage)
 
 	a.StartListening()
 }

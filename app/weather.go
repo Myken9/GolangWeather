@@ -1,4 +1,4 @@
-package weather
+package app
 
 import (
 	"github.com/briandowns/openweathermap"
@@ -15,7 +15,7 @@ func NewWeather(W *openweathermap.CurrentWeatherData) *Weather {
 	return &Weather{W}
 }
 
-func (w *Weather) HandleTelegramMessage(msg tgbotapi.Message) string {
+func (w *Weather) handleTelegramMessage(msg tgbotapi.Message) string {
 	var e error
 	if msg.Location != nil {
 		e = w.CurrentByCoordinates(&openweathermap.Coordinates{
