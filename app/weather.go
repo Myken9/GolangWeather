@@ -36,14 +36,12 @@ func (w *weather) handleTelegramMessage(msg tgbotapi.Message) string {
 	switch {
 	case msg.Text == "":
 		answer := "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
-		w.SaveUser(msg)
-		w.SaveLocation(msg, answer)
+		w.SaveUserLocation(msg, answer)
 		return answer
 
 	default:
 		answer := "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
-		w.SaveUser(msg)
-		w.SaveMessage(msg, answer)
+		w.SaveUserMessage(msg, answer)
 		return answer
 
 	}

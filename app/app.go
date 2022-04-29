@@ -18,11 +18,13 @@ func NewApplication(bot *telegram.Bot, weather *weather) *Application {
 
 func (a *Application) Run() {
 	a.RegisterCommand("start", func() string {
-		return "Я Sebastian - бот погоды, приятно познакомитсья!\n\n" +
+		answer := "Я Sebastian - бот погоды, приятно познакомитсья!\n\n" +
 			"Отправь /help для помощи."
+		return answer
 	})
 	a.RegisterCommand("help", func() string {
-		return "Напишите название города, в котором хотите узнать погоду, или отправьте мне свою текущую геопозицию."
+		answer := "Напишите название города, в котором хотите узнать погоду, или отправьте мне свою текущую геопозицию."
+		return answer
 	})
 	a.RegisterMessageHandler(a.handleTelegramMessage)
 
