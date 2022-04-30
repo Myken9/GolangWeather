@@ -23,13 +23,21 @@ func main() {
 
 	Conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		_, err := fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		if err != nil {
+			fmt.Println(err)
+		}
 		os.Exit(1)
 	}
 
 	newStorage := storage.NewStorage(Conn)
 
-	defer newStorage.Close(context.Background())
+	defer func(newStorage *storage.Storage, ctx context.Context) {
+		err := newStorage.Close(ctx)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(newStorage, context.Background())
 
 	botWeather, err := owm.NewCurrent("C", "ru", os.Getenv("WEATHER_API_KEY"))
 	if err != nil {
