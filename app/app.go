@@ -6,10 +6,10 @@ import (
 
 type Application struct {
 	*telegram.Bot
-	*weather
+	*app
 }
 
-func NewApplication(bot *telegram.Bot, weather *weather) *Application {
+func NewApplication(bot *telegram.Bot, weather *app) *Application {
 	return &Application{
 		bot,
 		weather,

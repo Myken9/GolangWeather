@@ -2,8 +2,8 @@ package main
 
 import (
 	"GolangWeather/app"
+	"GolangWeather/pkg/storage"
 	"GolangWeather/pkg/telegram"
-	"GolangWeather/storage"
 	"context"
 	"fmt"
 	owm "github.com/briandowns/openweathermap"
