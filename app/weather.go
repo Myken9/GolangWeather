@@ -2,6 +2,7 @@ package app
 
 import (
 	"GolangWeather/storage"
+	"fmt"
 	"github.com/briandowns/openweathermap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
@@ -36,12 +37,18 @@ func (w *weather) handleTelegramMessage(msg tgbotapi.Message) string {
 	switch {
 	case msg.Text == "":
 		answer := "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
-		w.SaveUserLocation(msg, answer)
+		err := w.SaveUserLocation(msg, answer)
+		if err != nil {
+			fmt.Println(err)
+		}
 		return answer
 
 	default:
 		answer := "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
-		w.SaveUserMessage(msg, answer)
+		err := w.SaveUserMessage(msg, answer)
+		if err != nil {
+			fmt.Println(err)
+		}
 		return answer
 
 	}
