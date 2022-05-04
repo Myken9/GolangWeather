@@ -2,10 +2,8 @@ package main
 
 import (
 	"GolangWeather/app"
-	"GolangWeather/pkg/storage"
 	"GolangWeather/pkg/telegram"
 	"context"
-	"fmt"
 	owm "github.com/briandowns/openweathermap"
 	"github.com/jackc/pgx/v4"
 	"github.com/joho/godotenv"
@@ -20,33 +18,19 @@ func init() {
 }
 
 func main() {
-
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		_, err := fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		if err != nil {
-			fmt.Println(err)
-		}
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
-	defer func(conn *pgx.Conn, ctx context.Context) {
-		err := conn.Close(ctx)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-	}(conn, context.Background())
+	defer conn.Close(context.Background())
 
 	botWeather, err := owm.NewCurrent("C", "ru", os.Getenv("WEATHER_API_KEY"))
 	if err != nil {
 		log.Fatalln(err)
 	}
+	botTelegram := telegram.NewBot(os.Getenv("TOKEN"))
 
-	weather := app.NewWeather(botWeather, storage.NewStorage(conn))
-
-	telegramBot := telegram.NewBot(os.Getenv("TOKEN"))
-
-	application := app.NewApplication(telegramBot, weather)
+	application := app.NewApplication(botTelegram, botWeather, conn)
 	application.Run()
 }

@@ -13,7 +13,7 @@ type handler struct {
 	s *storage.Storage
 }
 
-func NewWeather(w *openweathermap.CurrentWeatherData, s *storage.Storage) *handler {
+func NewHandler(w *openweathermap.CurrentWeatherData, s *storage.Storage) *handler {
 	return &handler{w: w, s: s}
 }
 
