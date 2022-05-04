@@ -15,11 +15,13 @@ func TestStorage_SaveUserLocation(t *testing.T) {
 	}
 	defer mock.Close(context.Background())
 
+	sdf := NewStorage(mock)
+
 	mock.ExpectExec("UPDATE products").WillReturnResult(pgxmock.NewResult("UPDATE", 1))
 	mock.ExpectExec("INSERT INTO product_viewers").WithArgs(2, 3).WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	mock.ExpectCommit()
 
-	if err = SaveUserMessage(tgbotapi.Message, "df"); err != nil {
+	if err = sdf.SaveUserMessage(tgbotapi.Message, "df"); err != nil {
 		t.Errorf("error was not expected while updating stats: %s", err)
 	}
 }

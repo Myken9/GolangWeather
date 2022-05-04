@@ -13,6 +13,7 @@ type Queryer interface {
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	Ping(context.Context) error
 	Prepare(context.Context, string, string) (*pgconn.StatementDescription, error)
 }
 
@@ -21,7 +22,7 @@ type Storage struct {
 }
 
 func NewStorage(conn Queryer) *Storage {
-	return &Storage{conn}
+	return &Storage{db: conn}
 }
 
 func (s *Storage) SaveUserMessage(msg tgbotapi.Message, answer string) error {

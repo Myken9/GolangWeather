@@ -3,9 +3,30 @@ package telegram
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"time"
 )
 
 const answer = "Я не знаю такой команды, введите /help"
+
+type Message struct {
+	ChatId     int64
+	MsgText    string
+	Longitude  float64
+	Latitude   float64
+	ReceiveAt  int
+	ResponseAt int
+}
+
+func NewMessage(msg *tgbotapi.Message) *Message {
+	return &Message{
+		ChatId:     msg.Chat.ID,
+		MsgText:    msg.Text,
+		Longitude:  msg.Location.Longitude,
+		Latitude:   msg.Location.Latitude,
+		ReceiveAt:  msg.Date,
+		ResponseAt: int(time.Now().Unix()),
+	}
+}
 
 type Bot struct {
 	Bot *tgbotapi.BotAPI

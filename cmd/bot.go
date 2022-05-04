@@ -21,7 +21,7 @@ func init() {
 
 func main() {
 
-	Conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		_, err := fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		if err != nil {
@@ -30,21 +30,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	newStorage := storage.NewStorage(Conn)
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		err := conn.Close(ctx)
 
-	defer func(newStorage *storage.Storage, ctx context.Context) {
-		err := newStorage.Close(ctx)
 		if err != nil {
 			fmt.Println(err)
 		}
-	}(newStorage, context.Background())
+	}(conn, context.Background())
 
 	botWeather, err := owm.NewCurrent("C", "ru", os.Getenv("WEATHER_API_KEY"))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	weather := app.NewWeather(botWeather, newStorage)
+	weather := app.NewWeather(botWeather, storage.NewStorage(conn))
 
 	telegramBot := telegram.NewBot(os.Getenv("TOKEN"))
 
