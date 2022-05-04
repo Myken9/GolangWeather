@@ -16,7 +16,7 @@ func NewStorage(conn *pgx.Conn) *Storage {
 }
 
 func (s *Storage) SaveUserMessage(msg tgbotapi.Message, answer string) error {
-	tx, err := s.BeginTx(context.Background(), pgx.TxOptions{})
+	tx, err := s.Begin(context.Background())
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (s *Storage) SaveUserMessage(msg tgbotapi.Message, answer string) error {
 }
 
 func (s *Storage) SaveUserLocation(msg tgbotapi.Message, answer string) error {
-	tx, err := s.BeginTx(context.Background(), pgx.TxOptions{})
+	tx, err := s.Begin(context.Background())
 	if err != nil {
 		return err
 	}
