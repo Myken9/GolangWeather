@@ -9,22 +9,30 @@ import (
 const answer = "Я не знаю такой команды, введите /help"
 
 type Message struct {
-	ChatId     int64
-	MsgText    string
-	Longitude  float64
-	Latitude   float64
-	ReceiveAt  int
-	ResponseAt int
+	FirstName    string
+	LastName     string
+	UserName     string
+	LanguageCode string
+	ChatId       int64
+	MsgText      string
+	Longitude    float64
+	Latitude     float64
+	ReceiveAt    int
+	ResponseAt   int
 }
 
 func NewMessage(msg *tgbotapi.Message) *Message {
 	return &Message{
-		ChatId:     msg.Chat.ID,
-		MsgText:    msg.Text,
-		Longitude:  msg.Location.Longitude,
-		Latitude:   msg.Location.Latitude,
-		ReceiveAt:  msg.Date,
-		ResponseAt: int(time.Now().Unix()),
+		FirstName:    msg.From.FirstName,
+		LastName:     msg.From.LastName,
+		UserName:     msg.From.UserName,
+		LanguageCode: msg.From.LanguageCode,
+		ChatId:       msg.Chat.ID,
+		MsgText:      msg.Text,
+		Longitude:    msg.Location.Longitude,
+		Latitude:     msg.Location.Latitude,
+		ReceiveAt:    msg.Date,
+		ResponseAt:   int(time.Now().Unix()),
 	}
 }
 
