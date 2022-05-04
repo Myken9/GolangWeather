@@ -10,23 +10,23 @@ import (
 )
 
 type weather struct {
-	*openweathermap.CurrentWeatherData
-	*storage.Storage
+	w *openweathermap.CurrentWeatherData
+	s *storage.Storage
 }
 
-func NewWeather(W *openweathermap.CurrentWeatherData, S *storage.Storage) *weather {
-	return &weather{W, S}
+func NewWeather(w *openweathermap.CurrentWeatherData, s *storage.Storage) *weather {
+	return &weather{w: w, s: s}
 }
 
 func (w *weather) handleTelegramMessage(msg tgbotapi.Message) string {
 	var e error
 	if msg.Location != nil {
-		e = w.CurrentByCoordinates(&openweathermap.Coordinates{
+		e = w.w.CurrentByCoordinates(&openweathermap.Coordinates{
 			Longitude: msg.Location.Longitude,
 			Latitude:  msg.Location.Latitude,
 		})
 	} else {
-		if e = w.CurrentByName(msg.Text); e != nil {
+		if e = w.w.CurrentByName(msg.Text); e != nil {
 			return "Я не знаю такого города."
 		}
 	}
@@ -36,16 +36,16 @@ func (w *weather) handleTelegramMessage(msg tgbotapi.Message) string {
 
 	switch {
 	case msg.Text == "":
-		answer := "Температура в вашем месте расположения : " + strconv.Itoa(int(w.Main.Temp)) + "C"
-		err := w.SaveUserLocation(msg, answer)
+		answer := "Температура в вашем месте расположения : " + strconv.Itoa(int(w.w.Main.Temp)) + "C"
+		err := w.s.SaveUserLocation(msg, answer)
 		if err != nil {
 			fmt.Println(err)
 		}
 		return answer
 
 	default:
-		answer := "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.Main.Temp)) + "C"
-		err := w.SaveUserMessage(msg, answer)
+		answer := "Погода в г." + msg.Text + ": " + strconv.Itoa(int(w.w.Main.Temp)) + "C"
+		err := w.s.SaveUserMessage(msg, answer)
 		if err != nil {
 			fmt.Println(err)
 		}

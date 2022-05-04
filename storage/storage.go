@@ -3,25 +3,34 @@ package storage
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"time"
 )
 
-type Storage struct {
-	*pgx.Conn
+type Queryer interface {
+	Begin(context.Context) (pgx.Tx, error)
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	Prepare(context.Context, string, string) (*pgconn.StatementDescription, error)
 }
 
-func NewStorage(conn *pgx.Conn) *Storage {
+type Storage struct {
+	db Queryer
+}
+
+func NewStorage(conn Queryer) *Storage {
 	return &Storage{conn}
 }
 
 func (s *Storage) SaveUserMessage(msg tgbotapi.Message, answer string) error {
-	tx, err := s.Begin(context.Background())
+	tx, err := s.db.Begin(context.Background())
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Exec(context.Background(),
+	_, err = s.db.Exec(context.Background(),
 		"INSERT INTO users"+
 			" (chat_id, first_name, last_name, user_name, language_code)"+
 			"VALUES ($1, $2, $3, $4, $5)"+
@@ -32,7 +41,7 @@ func (s *Storage) SaveUserMessage(msg tgbotapi.Message, answer string) error {
 		return err
 	}
 
-	_, err = s.Exec(context.Background(),
+	_, err = s.db.Exec(context.Background(),
 		"INSERT INTO message"+
 			" (chat_id, msg_text, receive_at, response_text, response_at)"+
 			"VALUES ($1, $2, $3, $4, $5);",
@@ -46,12 +55,12 @@ func (s *Storage) SaveUserMessage(msg tgbotapi.Message, answer string) error {
 }
 
 func (s *Storage) SaveUserLocation(msg tgbotapi.Message, answer string) error {
-	tx, err := s.Begin(context.Background())
+	tx, err := s.db.Begin(context.Background())
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Exec(context.Background(),
+	_, err = s.db.Exec(context.Background(),
 		"INSERT INTO users"+
 			" (chat_id, first_name, last_name, user_name, language_code)"+
 			"VALUES ($1, $2, $3, $4, $5)"+
@@ -62,7 +71,7 @@ func (s *Storage) SaveUserLocation(msg tgbotapi.Message, answer string) error {
 		return err
 	}
 
-	_, err = s.Exec(context.Background(),
+	_, err = s.db.Exec(context.Background(),
 		"INSERT INTO message"+
 			" (chat_id, msg_text, longitude, latitude, receive_at, response_text, response_at)"+
 			"VALUES ($1, $2, $3, $4, $5, $6, $7);",
