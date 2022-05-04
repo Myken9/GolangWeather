@@ -3,7 +3,6 @@ package telegram
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
-	"time"
 )
 
 const answer = "Я не знаю такой команды, введите /help"
@@ -32,7 +31,6 @@ func NewMessage(msg *tgbotapi.Message) *Message {
 		Longitude:    msg.Location.Longitude,
 		Latitude:     msg.Location.Latitude,
 		ReceiveAt:    msg.Date,
-		ResponseAt:   int(time.Now().Unix()),
 	}
 }
 
