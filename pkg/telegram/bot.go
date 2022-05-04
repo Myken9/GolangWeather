@@ -17,7 +17,6 @@ type Message struct {
 	Longitude    float64
 	Latitude     float64
 	ReceiveAt    int
-	ResponseAt   int
 }
 
 func NewMessage(msg *tgbotapi.Message) *Message {
