@@ -3,6 +3,7 @@ package storage
 import (
 	"GolangWeather/pkg/telegram"
 	"context"
+
 	"github.com/pashagolub/pgxmock"
 	"testing"
 )
@@ -17,11 +18,15 @@ func TestStorage_SaveUserLocation(t *testing.T) {
 
 	sdf := NewStorage(mock)
 
-	mock.ExpectExec("UPDATE products").WillReturnResult(pgxmock.NewResult("UPDATE", 1))
-	mock.ExpectExec("INSERT INTO product_viewers").WithArgs(2, 3).WillReturnResult(pgxmock.NewResult("INSERT", 1))
+	mock.ExpectExec("INSERT INTO users").WithArgs(2, "FirstName", "FirstName", "FirstName", "FirstName").WillReturnResult(pgxmock.NewResult("INSERT", 1))
+	mock.ExpectExec("INSERT INTO message").WithArgs(2, "Text", 0.2, 0.2, 10, "df", 11).WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	mock.ExpectCommit()
 
-	if err = sdf.SaveUserMessage(telegram.Message, "df"); err != nil {
+	if err = sdf.SaveUserMessage(telegram.Message{}, "df"); err != nil {
 		t.Errorf("error was not expected while updating stats: %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }

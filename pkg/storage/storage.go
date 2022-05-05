@@ -24,62 +24,32 @@ func NewStorage(conn Queryer) *Storage {
 	return &Storage{db: conn}
 }
 
-func (s *Storage) SaveUserMessage(msg telegram.Message, answer string) error {
-	tx, err := s.db.Begin(context.Background())
-	if err != nil {
-		return err
-	}
+func (s *Storage) SaveUserMessage(msg telegram.Message, answer string) (e error) {
+	tx, e := s.db.Begin(context.Background())
+	defer func() {
+		if e != nil {
+			e = tx.Rollback(context.Background())
+		} else {
+			e = tx.Commit(context.Background())
+		}
+	}()
 
-	_, err = s.db.Exec(context.Background(),
+	_, e = s.db.Exec(context.Background(),
 		"INSERT INTO users"+
 			" (chat_id, first_name, last_name, user_name, language_code)"+
 			"VALUES ($1, $2, $3, $4, $5)"+
 			"ON CONFLICT (chat_id) DO NOTHING;",
 		msg.ChatId, msg.From.FirstName, msg.From.LastName, msg.From.UserName, msg.From.LanguageCode)
-	if err != nil {
-		tx.Rollback(context.Background())
-		return err
-	}
 
-	_, err = s.db.Exec(context.Background(),
-		"INSERT INTO message"+
-			" (chat_id, msg_text, receive_at, response_text, response_at)"+
-			"VALUES ($1, $2, $3, $4, $5);",
-		msg.ChatId, msg.Text, msg.ReceiveAt, answer, msg.ResponseAt)
-	if err != nil {
-		tx.Rollback(context.Background())
-		return err
+	var longitude, latitude float64
+	if msg.Location != nil {
+		longitude = msg.Location.Longitude
+		latitude = msg.Location.Latitude
 	}
-	err = tx.Commit(context.Background())
-	return err
-}
-
-func (s *Storage) SaveUserLocation(msg telegram.Message, answer string) error {
-	tx, err := s.db.Begin(context.Background())
-	if err != nil {
-		return err
-	}
-
-	_, err = s.db.Exec(context.Background(),
-		"INSERT INTO users"+
-			" (chat_id, first_name, last_name, user_name, language_code)"+
-			"VALUES ($1, $2, $3, $4, $5)"+
-			"ON CONFLICT (chat_id) DO NOTHING;",
-		msg.ChatId, msg.From.FirstName, msg.From.LastName, msg.From.UserName, msg.From.LanguageCode)
-	if err != nil {
-		tx.Rollback(context.Background())
-		return err
-	}
-
-	_, err = s.db.Exec(context.Background(),
+	_, e = s.db.Exec(context.Background(),
 		"INSERT INTO message"+
 			" (chat_id, msg_text, longitude, latitude, receive_at, response_text, response_at)"+
 			"VALUES ($1, $2, $3, $4, $5, $6, $7);",
-		msg.ChatId, msg.Text, msg.Location.Longitude, msg.Location.Latitude, msg.ReceiveAt, answer, msg.ResponseAt)
-	if err != nil {
-		tx.Rollback(context.Background())
-		return err
-	}
-	err = tx.Commit(context.Background())
-	return err
+		msg.ChatId, msg.Text, longitude, latitude, msg.ReceiveAt, answer, msg.ResponseAt)
+	return e
 }

@@ -4,7 +4,6 @@ import (
 	"GolangWeather/pkg/storage"
 	"GolangWeather/pkg/telegram"
 	"github.com/briandowns/openweathermap"
-	"log"
 	"strconv"
 	"time"
 )
@@ -18,8 +17,8 @@ func NewHandler(w *openweathermap.CurrentWeatherData, s *storage.Storage) *handl
 	return &handler{w: w, s: s}
 }
 
-func (h *handler) handleTelegramMessage(msg telegram.Message) (answer string) {
-	msg.ResponseAt = int(time.Now().Unix())
+func (h *handler) handleTelegramMessage(msg telegram.Message) string {
+	var answer string
 	if msg.Location != nil {
 		if e := h.w.CurrentByCoordinates(&openweathermap.Coordinates{
 			Longitude: msg.Location.Longitude,
@@ -28,17 +27,15 @@ func (h *handler) handleTelegramMessage(msg telegram.Message) (answer string) {
 			return e.Error()
 		}
 		answer = "Температура в вашем месте расположения : " + strconv.Itoa(int(h.w.Main.Temp)) + "C"
-		if e := h.s.SaveUserLocation(msg, answer); e != nil {
-			log.Fatal(e.Error())
-		}
 	} else {
 		if e := h.w.CurrentByName(msg.Text); e != nil {
-			return "Я не знаю такого города."
+			return e.Error()
 		}
 		answer = "Погода в г." + msg.Text + ": " + strconv.Itoa(int(h.w.Main.Temp)) + "C"
-		if e := h.s.SaveUserMessage(msg, answer); e != nil {
-			log.Fatal(e.Error())
-		}
+	}
+	msg.ResponseAt = int(time.Now().Unix())
+	if e := h.s.SaveUserMessage(msg, answer); e != nil {
+		return e.Error()
 	}
 
 	return answer
