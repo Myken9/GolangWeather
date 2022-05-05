@@ -8,35 +8,23 @@ import (
 const answer = "Я не знаю такой команды, введите /help"
 
 type Message struct {
-	FirstName    string
-	LastName     string
-	UserName     string
-	LanguageCode string
-	ChatId       int64
-	MsgText      string
-	Longitude    float64
-	Latitude     float64
-	ReceiveAt    int
-}
-
-func NewMessage(msg *tgbotapi.Message) *Message {
-	return &Message{
-		FirstName:    msg.From.FirstName,
-		LastName:     msg.From.LastName,
-		UserName:     msg.From.UserName,
-		LanguageCode: msg.From.LanguageCode,
-		ChatId:       msg.Chat.ID,
-		MsgText:      msg.Text,
-		Longitude:    msg.Location.Longitude,
-		Latitude:     msg.Location.Latitude,
-		ReceiveAt:    msg.Date,
+	ChatId     int64
+	Text       string
+	ReceiveAt  int
+	ResponseAt int
+	From       struct {
+		FirstName    string
+		LastName     string
+		UserName     string
+		LanguageCode string
 	}
+	Location *tgbotapi.Location
 }
 
 type Bot struct {
 	Bot *tgbotapi.BotAPI
 
-	handleMessageFunction  func(msg tgbotapi.Message) string
+	handleMessageFunction  func(msg Message) string
 	handleCommandFunctions map[string]func() string
 }
 
@@ -48,7 +36,7 @@ func NewBot(apiToken string) *Bot {
 
 	bot := &Bot{
 		Bot: tg,
-		handleMessageFunction: func(msg tgbotapi.Message) string {
+		handleMessageFunction: func(msg Message) string {
 			return msg.Text
 		},
 		handleCommandFunctions: map[string]func() string{},
@@ -71,7 +59,25 @@ func (b *Bot) StartListening() {
 				continue
 			}
 			msg := update.Message
-			_, err := b.Bot.Send(tgbotapi.NewMessage(msg.Chat.ID, b.handleMessageFunction(*msg)))
+			_, err := b.Bot.Send(tgbotapi.NewMessage(msg.Chat.ID, b.handleMessageFunction(Message{
+				ChatId:     msg.Chat.ID,
+				Text:       msg.Text,
+				ReceiveAt:  msg.Date,
+				ResponseAt: 0,
+				From: struct {
+					FirstName    string
+					LastName     string
+					UserName     string
+					LanguageCode string
+				}{
+					FirstName:    msg.From.FirstName,
+					LastName:     msg.From.LastName,
+					UserName:     msg.From.UserName,
+					LanguageCode: msg.From.LanguageCode,
+				},
+				Location: msg.Location,
+			})))
+
 			if err != nil {
 				panic(err)
 			}
@@ -79,7 +85,7 @@ func (b *Bot) StartListening() {
 	}
 }
 
-func (b *Bot) RegisterMessageHandler(fn func(msg tgbotapi.Message) string) {
+func (b *Bot) RegisterMessageHandler(fn func(msg Message) string) {
 	b.handleMessageFunction = fn
 }
 

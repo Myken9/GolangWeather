@@ -1,8 +1,8 @@
 package storage
 
 import (
+	"GolangWeather/pkg/telegram"
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pashagolub/pgxmock"
 	"testing"
 )
@@ -21,7 +21,7 @@ func TestStorage_SaveUserLocation(t *testing.T) {
 	mock.ExpectExec("INSERT INTO product_viewers").WithArgs(2, 3).WillReturnResult(pgxmock.NewResult("INSERT", 1))
 	mock.ExpectCommit()
 
-	if err = sdf.SaveUserMessage(tgbotapi.Message, "df"); err != nil {
+	if err = sdf.SaveUserMessage(telegram.Message, "df"); err != nil {
 		t.Errorf("error was not expected while updating stats: %s", err)
 	}
 }

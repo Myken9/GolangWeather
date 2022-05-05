@@ -5,28 +5,28 @@ import (
 )
 
 type Application struct {
-	*telegram.Bot
-	*weather
+	bot     *telegram.Bot
+	handler *handler
 }
 
-func NewApplication(bot *telegram.Bot, weather *weather) *Application {
+func NewApplication(bot *telegram.Bot, handler *handler) *Application {
 	return &Application{
-		bot,
-		weather,
+		bot:     bot,
+		handler: handler,
 	}
 }
 
 func (a *Application) Run() {
-	a.RegisterCommand("start", func() string {
+	a.bot.RegisterCommand("start", func() string {
 		answer := "Я Sebastian - бот погоды, приятно познакомитсья!\n\n" +
 			"Отправь /help для помощи."
 		return answer
 	})
-	a.RegisterCommand("help", func() string {
+	a.bot.RegisterCommand("help", func() string {
 		answer := "Напишите название города, в котором хотите узнать погоду, или отправьте мне свою текущую геопозицию."
 		return answer
 	})
-	a.RegisterMessageHandler(a.handleTelegramMessage)
+	a.bot.RegisterMessageHandler(a.handler.handleTelegramMessage)
 
-	a.StartListening()
+	a.bot.StartListening()
 }
